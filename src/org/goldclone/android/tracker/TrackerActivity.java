@@ -23,7 +23,7 @@ public class TrackerActivity extends MapActivity/* extends Activity */{
 		MapView mapView = (MapView) findViewById(R.id.mapview);
 		mapView.setBuiltInZoomControls(true);
 
-		/*
+		
 		long t = 5000; // milliseconds
 		float distance = 5.0f; // meters
 
@@ -47,7 +47,7 @@ public class TrackerActivity extends MapActivity/* extends Activity */{
 			}
 		};
 		locationManager.requestLocationUpdates(providerName, t, distance,
-				myLocationListener);*/
+				myLocationListener);
 	}
 
 	@Override
