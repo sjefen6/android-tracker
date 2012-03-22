@@ -1,5 +1,7 @@
 package org.goldclone.android.tracker;
 
+import java.util.ArrayList;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.*;
@@ -16,32 +18,42 @@ public class RouteDBAdapter {
 	 */
 	private static final String DATABASE_TABLE_ROUTES = "RouteTable";
 	// Kolonnenavn og kolonneindeks:
-	public static final String COL_ROUTEID = "_id";
-	public static final int COL_ROUTEID_NO = 0;
-
-	public static final String COL_ROUTENAME = "routename";
-	public static final int COL_LASTNAME_NO = 1;
+	public static final String COL_ROUTEID = "_id", COL_ROUTENAME = "routename";
+	public static final int COL_ROUTEID_NO = 0, COL_ROUTENAME_NO = 1;
 
 	// SQL som brukes til å opprette tabellen i databasen:
 	private static final String TABLE_CREATE_ROUTE = "create table " + DATABASE_TABLE_ROUTES
 			+ " (" + COL_ROUTEID + " integer primary key autoincrement, "
-			+ COL_ROUTENAME + " text not null)";
+			+ COL_ROUTENAME + " text not null"
+			+ ");";
 	
 	/*
 	 * RouteTable
 	 */
-	private static final String DATABASE_TABLE_GEOLOC = "RouteTable";
+	private static final String DATABASE_TABLE_GEOLOC = "GeoLocTable";
 	// Kolonnenavn og kolonneindeks:
 	public static final String COL_GEOLOCID = "_id";
 	public static final int COL_GEOLOCID_NO = 0;
-
-	public static final String COL_GEOLOCNAME = "routename";
-	public static final int COL_GEOLOCNAME_NO = 1;
-
+	
+	private static final String COL_ACC = "acc", COL_BEAR ="bear", COL_SPD = "spd"; // floats
+	private static final int COL_ACC_NO = 1, COL_BEAR_NO = 2, COL_SPD_NO = 3;
+	private static final String COL_ALT = "alt", COL_LATE6 = "latE6", COL_LONE6 = "lonE6"; // doubles
+	private static final int COL_ALT_NO = 4, COL_LATE6_NO = 5, COL_LONE6_NO = 6;
+	private static final String COL_GEOLOCROUTEID = "routeID"; // long
+	private static final int COL_GEOLOCROUTEID_NO = 7;
+	
+	
 	// SQL som brukes til å opprette tabellen i databasen:
-	private static final String TABLE_CREATE = "create table " + DATABASE_TABLE_ROUTES
+	private static final String TABLE_CREATE_GEOLOC = "create table " + DATABASE_TABLE_GEOLOC
 			+ " (" + COL_ROUTEID + " integer primary key autoincrement, "
-			+ COL_ROUTENAME + " text not null)";
+			+ COL_ACC + " real not null, "
+			+ COL_BEAR + " real not null, "
+			+ COL_SPD + " real not null, "
+			+ COL_ALT + " real not null, "
+			+ COL_LATE6 + " real not nul, l"
+			+ COL_LONE6 + " real not null"
+			+ COL_GEOLOCROUTEID + " real not null"
+			+ ");";
 
 	// Databaseinstansen:
 	private SQLiteDatabase db;
@@ -74,46 +86,58 @@ public class RouteDBAdapter {
 	}
 
 	// Legge til post i tabellen:
-	public long insertEntry(Contact _myObject) {
-		ContentValues newEntryValue = new ContentValues();
-		newEntryValue.put(COL_LASTNAME, _myObject.getLastname());
-		newEntryValue.put(COL_FIRSTNAME, _myObject.getFirstname());
-		newEntryValue.put(COL_TLF, _myObject.getTlf());
-
-		return db.insert(DATABASE_TABLE, null, newEntryValue);
-	}
+//	public long insertEntry(Contact _myObject) {
+//		ContentValues newEntryValue = new ContentValues();
+//		newEntryValue.put(COL_LASTNAME, _myObject.getLastname());
+//		newEntryValue.put(COL_FIRSTNAME, _myObject.getFirstname());
+//		newEntryValue.put(COL_TLF, _myObject.getTlf());
+//
+//		return db.insert(DATABASE_TABLE, null, newEntryValue);
+//	}
 
 	// Fjerne post gitt radindeks:
-	public boolean removeEntry(long _rowIndex) {
-		return db.delete(DATABASE_TABLE, COL_ID + "=" + _rowIndex, null) > 0;
-	}
+//	public boolean removeEntry(long _rowIndex) {
+//		return db.delete(DATABASE_TABLE, COL_ID + "=" + _rowIndex, null) > 0;
+//	}
 
 	// Fjerner alle poster fra tabellen:
-	public boolean removeAllEntries() {
-		return db.delete(DATABASE_TABLE, null, null) > 0;
-	}
+//	public boolean removeAllEntries() {
+//		return db.delete(DATABASE_TABLE, null, null) > 0;
+//	}
 
 	// Henter alle poster fra tabellen og returnerer en cursor:
-	public Cursor getAllEntries() {
-		return db.query(DATABASE_TABLE, new String[] { COL_ID, COL_LASTNAME,
-				COL_FIRSTNAME, COL_TLF }, null, null, null, null, null);
-	}
+//	public Cursor getAllEntries() {
+//		return db.query(DATABASE_TABLE, new String[] { COL_ID, COL_LASTNAME,
+//				COL_FIRSTNAME, COL_TLF }, null, null, null, null, null);
+//	}
 
 	// Henter ut en spesifikt Contact (gitt radindeks):
-	public Contact getEntry(long _rowIndex) {
-		Cursor result = db.query(true, DATABASE_TABLE, new String[] { COL_ID,
-				COL_LASTNAME, COL_FIRSTNAME, COL_TLF }, COL_ID + "="
-				+ _rowIndex, null, null, null, null, null);
+			
+	public Route getEntry(long _rowIndex) {
+		Cursor result = db.query(true, DATABASE_TABLE_ROUTES, new String[] { COL_ROUTEID,
+				COL_ROUTENAME}, COL_ROUTEID + "=" + _rowIndex,
+				null, null, null, null, null);
+		
 		if (result.getCount() == 0 || !result.moveToFirst()) {
-			throw new SQLException("Fant ingen kontakter i index " + _rowIndex);
+			throw new SQLException("Could not find any routes at id " + _rowIndex);
 		}
-		String lastname = result.getString(COL_LASTNAME_NO);
-		String firstname = result.getString(COL_FIRSTNAME_NO);
-		String tlf = result.getString(COL_TLF_NO);
+		
+		String routename = result.getString(COL_ROUTENAME_NO);
+		ArrayList<GeoLoc> locationArray = getAllGeoLoc(_rowIndex);
 
-		Contact res = new Contact(lastname, firstname, tlf);
+		Route res = new Route(routename, locationArray);
 		return res;
 	}
+	
+	// Henter alle poster fra tabellen og returnerer en cursor:
+	private ArrayList<GeoLoc> getAllGeoLoc(long _routeId) {
+		Cursor result = db.query(DATABASE_TABLE_GEOLOC, new String[] { COL_GEOLOCID, COL_ACC, COL_ALT, COL_BEAR
+				, COL_LATE6, COL_LONE6, COL_SPD, COL_GEOLOCROUTEID}, null, null, null, null, null);
+		ArrayList<GeoLoc> res = new ArrayList<GeoLoc>();
+//		for(result)
+		return null;
+	}
+	
 
 	// ////////////////
 	// / MyDBHelper ///
@@ -127,7 +151,8 @@ public class RouteDBAdapter {
 
 		@Override
 		public void onCreate(SQLiteDatabase _db) {
-			_db.execSQL(TABLE_CREATE);
+			_db.execSQL(TABLE_CREATE_ROUTE);
+			_db.execSQL(TABLE_CREATE_GEOLOC);
 		}
 
 		@Override
@@ -138,7 +163,8 @@ public class RouteDBAdapter {
 					+ ", which will destroy all old data");
 
 			// Sletter gammel tabell og oppretter på nytt:
-			_db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE);
+			_db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_ROUTES);
+			_db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_GEOLOC);
 			onCreate(_db);
 		}
 	}

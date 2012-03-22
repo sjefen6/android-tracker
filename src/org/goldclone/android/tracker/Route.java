@@ -6,8 +6,14 @@ public class Route {
 	private String name;
 	private ArrayList<GeoLoc> locationArray;
 	
-	public Route(){
-		locationArray = new ArrayList<GeoLoc>();
+	public Route(String name){
+		this.name = name;
+		this.locationArray = new ArrayList<GeoLoc>();
+	}
+	
+	public Route(String name, ArrayList<GeoLoc> locationArray){
+		this.name = name;
+		this.locationArray = locationArray;
 	}
 	
 	public String getName(){
