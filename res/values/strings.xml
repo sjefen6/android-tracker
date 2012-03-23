@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="hello">Hello World, TrackerActivity!</string>
     <string name="app_name">Tracker</string>
+    <string name="new_route">New route</string>
+    <string name="stop_route">Stop route</string>
+    <string name="view_route">View route</string>
 
 </resources>

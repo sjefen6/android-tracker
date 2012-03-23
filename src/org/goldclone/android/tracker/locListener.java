@@ -1,5 +1,6 @@
 package org.goldclone.android.tracker;
 
+import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -13,7 +14,9 @@ public class locListener implements LocationListener {
 	private String providerName;
 	Route newRoute;
 	
-	public locListener(Route newRoute){
+	public locListener(Route newRoute, Context context){
+		locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+		providerName = LocationManager.GPS_PROVIDER;
 		locationManager.requestLocationUpdates(providerName, T, DISTANCE, this);
 		this.newRoute = newRoute;
 	}
@@ -33,6 +36,11 @@ public class locListener implements LocationListener {
 	}
 
 	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop() {
 		// TODO Auto-generated method stub
 		
 	}
