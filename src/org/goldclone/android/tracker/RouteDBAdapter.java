@@ -28,7 +28,7 @@ public class RouteDBAdapter {
 			+ ");";
 	
 	/*
-	 * RouteTable
+	 * GeoLocTable
 	 */
 	private static final String DATABASE_TABLE_GEOLOC = "GeoLocTable";
 	// Kolonnenavn og kolonneindeks:
@@ -39,8 +39,8 @@ public class RouteDBAdapter {
 	private static final int COL_ACC_NO = 1, COL_BEAR_NO = 2, COL_SPD_NO = 3;
 	private static final String COL_ALT = "alt", COL_LATE6 = "latE6", COL_LONE6 = "lonE6"; // doubles
 	private static final int COL_ALT_NO = 4, COL_LATE6_NO = 5, COL_LONE6_NO = 6;
-	private static final String COL_GEOLOCROUTEID = "routeID"; // long
-	private static final int COL_GEOLOCROUTEID_NO = 7;
+	private static final String COL_GEOLOCROUTEID = "routeID", COL_TIME = "time"; // long
+	private static final int COL_GEOLOCROUTEID_NO = 7, COL_TIME_NO = 8;
 	
 	
 	// SQL som brukes til Œ opprette tabellen i databasen:
@@ -53,6 +53,7 @@ public class RouteDBAdapter {
 			+ COL_LATE6 + " real not nul, l"
 			+ COL_LONE6 + " real not null"
 			+ COL_GEOLOCROUTEID + " real not null"
+			+ COL_TIME + " real not null"
 			+ ");";
 
 	// Databaseinstansen:
@@ -85,15 +86,41 @@ public class RouteDBAdapter {
 		db.close();
 	}
 
-	// Legge til post i tabellen:
-//	public long insertEntry(Contact _myObject) {
-//		ContentValues newEntryValue = new ContentValues();
-//		newEntryValue.put(COL_LASTNAME, _myObject.getLastname());
-//		newEntryValue.put(COL_FIRSTNAME, _myObject.getFirstname());
-//		newEntryValue.put(COL_TLF, _myObject.getTlf());
-//
-//		return db.insert(DATABASE_TABLE, null, newEntryValue);
-//	}
+	// Legge til Route i tabellen:
+	public long insertEntry(Route _newRoute) {
+		ContentValues newEntryValue = new ContentValues();
+		newEntryValue.put(COL_ROUTENAME, _newRoute.getName());
+		
+		long errorLvl = db.insert(DATABASE_TABLE_ROUTES, null, newEntryValue);
+		
+		if(errorLvl != -1){
+			Cursor result = db.query(true, DATABASE_TABLE_ROUTES, new String[] { COL_ROUTEID},
+					COL_ROUTENAME_NO + "=" + _newRoute.getName(), null, null, null, null, null);
+			
+			if (result.getCount() == 0 || !result.moveToFirst()) {
+				throw new SQLException("Derp!");
+			}
+			
+			for (GeoLoc g : _newRoute.getArray()) {
+				if (errorLvl != -1) {
+					newEntryValue = new ContentValues();
+					newEntryValue.put(COL_ACC, g.getAcc());
+					newEntryValue.put(COL_BEAR, g.getBear());
+					newEntryValue.put(COL_SPD, g.getSpd());
+					newEntryValue.put(COL_ALT, g.getAlt());
+					newEntryValue.put(COL_LATE6, g.getLatE6());
+					newEntryValue.put(COL_LONE6, g.getLonE6());
+					newEntryValue.put(COL_GEOLOCROUTEID,
+							result.getString(COL_ROUTEID_NO));
+					newEntryValue.put(COL_TIME, g.getTime());
+
+					errorLvl = db.insert(DATABASE_TABLE_GEOLOC, null,
+							newEntryValue);
+				}
+			}
+		}
+		return errorLvl;
+	}
 
 	// Fjerne post gitt radindeks:
 //	public boolean removeEntry(long _rowIndex) {
@@ -129,13 +156,43 @@ public class RouteDBAdapter {
 		return res;
 	}
 	
+	public ArrayList<String[]> getAllRoutes(){
+		Cursor result = db.query(true, DATABASE_TABLE_ROUTES, new String[] { COL_ROUTEID,
+				COL_ROUTENAME}, null, null, null, null, null, null);
+		
+		ArrayList <String[]> res = new ArrayList <String[]>();
+		
+		if (result.moveToFirst()) {
+			while (!result.isAfterLast()) {
+				String[] s = {result.getString(COL_ROUTEID_NO), result.getString(COL_ROUTENAME_NO)};
+				res.add(s);
+			}
+		}
+		return res;
+	}
+	
+	
 	// Henter alle poster fra tabellen og returnerer en cursor:
 	private ArrayList<GeoLoc> getAllGeoLoc(long _routeId) {
 		Cursor result = db.query(DATABASE_TABLE_GEOLOC, new String[] { COL_GEOLOCID, COL_ACC, COL_ALT, COL_BEAR
-				, COL_LATE6, COL_LONE6, COL_SPD, COL_GEOLOCROUTEID}, null, null, null, null, null);
+				, COL_LATE6, COL_LONE6, COL_SPD, COL_TIME}, COL_GEOLOCROUTEID_NO + "=" + _routeId, null, null, null, null);
 		ArrayList<GeoLoc> res = new ArrayList<GeoLoc>();
-//		for(result)
-		return null;
+
+		if (result.moveToFirst()) {
+			while (!result.isAfterLast()) {
+				long time = Long.valueOf(result.getString(COL_TIME_NO));
+				float acc = Float.valueOf(result.getString(COL_ACC_NO));
+				float bear = Float.valueOf(result.getString(COL_BEAR_NO));
+				float spd = Float.valueOf(result.getString(COL_SPD_NO));
+				double alt = Double.valueOf(result.getString(COL_ALT_NO));
+				double latE6 = Double.valueOf(result.getString(COL_LATE6_NO));
+				double lonE6 = Double.valueOf(result.getString(COL_LONE6_NO));
+				
+				res.add(new GeoLoc(acc,alt,bear,latE6,lonE6,spd,time));
+			}
+		}
+
+		return res;
 	}
 	
 
