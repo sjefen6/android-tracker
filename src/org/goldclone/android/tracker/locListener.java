@@ -2,14 +2,24 @@ package org.goldclone.android.tracker;
 
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 public class locListener implements LocationListener {
-
+	public static long T = 5000; // milliseconds
+	public static float DISTANCE = 5.0f; // meters
+	
+	private LocationManager locationManager;
+	private String providerName;
+	Route newRoute;
+	
+	public locListener(Route newRoute){
+		locationManager.requestLocationUpdates(providerName, T, DISTANCE, this);
+		this.newRoute = newRoute;
+	}
+	
 	public void onLocationChanged(Location location) {
-		// TODO Auto-generated method stub
-		double lat = location.getLatitude();
-		double lng = location.getLongitude();
+		newRoute.addLocation(location);
 	}
 
 	public void onProviderDisabled(String provider) {

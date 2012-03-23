@@ -2,7 +2,6 @@ package org.goldclone.android.tracker;
 
 import com.google.android.maps.GeoPoint;
 
-import android.content.ContentValues;
 import android.location.Location;
 
 public class GeoLoc {

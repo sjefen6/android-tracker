@@ -2,6 +2,8 @@ package org.goldclone.android.tracker;
 
 import java.util.ArrayList;
 
+import android.location.Location;
+
 public class Route {
 	private String name;
 	private ArrayList<GeoLoc> locationArray;
@@ -24,8 +26,8 @@ public class Route {
 		return locationArray;
 	}
 	
-	public void addLocation(GeoLoc location){
-		locationArray.add(location);
+	public void addLocation(Location location){
+		locationArray.add(new GeoLoc(location));
 	}
 	
 
