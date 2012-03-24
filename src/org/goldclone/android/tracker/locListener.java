@@ -41,7 +41,7 @@ public class locListener implements LocationListener {
 	}
 
 	public void stop() {
-		// TODO Auto-generated method stub
+		locationManager.removeUpdates(this);
 		
 	}
 

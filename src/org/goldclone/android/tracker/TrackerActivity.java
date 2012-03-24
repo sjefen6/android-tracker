@@ -42,6 +42,7 @@ public class TrackerActivity extends MapActivity /* extends Activity */ {
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		mapView.setBuiltInZoomControls(true);
+		mapOverlays = mapView.getOverlays();
 		
 		tracking = false;
 		db = new RouteDBAdapter(this);
