@@ -8,6 +8,7 @@ import android.database.*;
 import android.database.sqlite.*;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.util.Log;
+import android.widget.Toast;
 
 public class RouteDBAdapter {
 	private static final String DATABASE_NAME = "Route.db";
@@ -50,9 +51,9 @@ public class RouteDBAdapter {
 			+ COL_BEAR + " real not null, "
 			+ COL_SPD + " real not null, "
 			+ COL_ALT + " real not null, "
-			+ COL_LATE6 + " real not nul, l"
-			+ COL_LONE6 + " real not null"
-			+ COL_GEOLOCROUTEID + " real not null"
+			+ COL_LATE6 + " real not null, "
+			+ COL_LONE6 + " real not null, "
+			+ COL_GEOLOCROUTEID + " real not null, "
 			+ COL_TIME + " real not null"
 			+ ");";
 
@@ -76,7 +77,10 @@ public class RouteDBAdapter {
 		try {
 			db = dbHelper.getWritableDatabase();
 		} catch (SQLiteException ex) {
-			db = dbHelper.getReadableDatabase();
+			Toast.makeText(context, ex.getMessage(), Toast.LENGTH_LONG)
+			.show();
+			
+//			db = dbHelper.getReadableDatabase();
 		}
 		return this;
 	}
@@ -170,7 +174,6 @@ public class RouteDBAdapter {
 		}
 		return res;
 	}
-	
 	
 	// Henter alle poster fra tabellen og returnerer en cursor:
 	private ArrayList<GeoLoc> getAllGeoLoc(long _routeId) {
