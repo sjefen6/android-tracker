@@ -77,10 +77,7 @@ public class RouteDBAdapter {
 		try {
 			db = dbHelper.getWritableDatabase();
 		} catch (SQLiteException ex) {
-			Toast.makeText(context, ex.getMessage(), Toast.LENGTH_LONG)
-			.show();
-			
-//			db = dbHelper.getReadableDatabase();
+			db = dbHelper.getReadableDatabase();
 		}
 		return this;
 	}

@@ -13,7 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class ShowRoute extends Activity {
+public class ShowRouteActivity extends Activity {
 	private RouteDBAdapter db;
 	private ArrayList<String> rutes;
 	private ArrayList<String[]> routesStringArray;
@@ -29,6 +29,12 @@ public class ShowRoute extends Activity {
 
 		routesStringArray = db.getAllRoutes();
 		rutes = new ArrayList<String>();
+
+		if (routesStringArray.isEmpty()) {
+			Toast.makeText(getBaseContext(), "No routes found!", Toast.LENGTH_SHORT)
+					.show();
+			finish();
+		}
 
 		for (String[] s : routesStringArray) {
 			rutes.add(s[1]);

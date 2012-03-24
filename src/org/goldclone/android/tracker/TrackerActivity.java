@@ -9,6 +9,7 @@ import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.database.SQLException;
@@ -71,7 +72,9 @@ public class TrackerActivity extends MapActivity /* extends Activity */ {
 		
 		view_route.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-
+				Intent intent = new Intent();
+                intent.setComponent(new ComponentName("org.goldclone.android.tracker", "org.goldclone.android.tracker.ShowRouteActivity"));
+                startActivityForResult(intent, 1);
 			}
 		});
 	}

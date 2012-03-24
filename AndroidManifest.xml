@@ -23,6 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ShowRouteActivity" >
+            <intent-filter>
+                <action android:name="org.goldclone.android.tracker.ShowRouteActivity" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
