@@ -49,15 +49,13 @@ public class ShowRouteActivity extends Activity {
 
 				String r = rutes.get(position);
 				for (String[] rsa : routesStringArray) {
-					if (r.equals(rsa[0])) {
+					if (r.equals(rsa[1])) {
 						Intent returnIntent = getIntent();
-						returnIntent.putExtra("routeId", rsa[1]);
+						returnIntent.putExtra("routeId", rsa[0]);
 						setResult(1, returnIntent);
 						finish();
 					}
 				}
-				Toast.makeText(getBaseContext(), "Code gone to far!",
-						Toast.LENGTH_SHORT).show();
 			}
 		});
 	}

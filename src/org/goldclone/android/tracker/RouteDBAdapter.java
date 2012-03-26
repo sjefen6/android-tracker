@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 public class RouteDBAdapter {
 	private static final String DATABASE_NAME = "Route.db";
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 3;
 	
 	/*
 	 * RouteTable
@@ -122,23 +122,7 @@ public class RouteDBAdapter {
 		}
 		return errorLvl;
 	}
-
-	// Fjerne post gitt radindeks:
-//	public boolean removeEntry(long _rowIndex) {
-//		return db.delete(DATABASE_TABLE, COL_ID + "=" + _rowIndex, null) > 0;
-//	}
-
-	// Fjerner alle poster fra tabellen:
-//	public boolean removeAllEntries() {
-//		return db.delete(DATABASE_TABLE, null, null) > 0;
-//	}
-
-	// Henter alle poster fra tabellen og returnerer en cursor:
-//	public Cursor getAllEntries() {
-//		return db.query(DATABASE_TABLE, new String[] { COL_ID, COL_LASTNAME,
-//				COL_FIRSTNAME, COL_TLF }, null, null, null, null, null);
-//	}
-
+	
 	// Henter ut en spesifikt Contact (gitt radindeks):
 			
 	public Route getEntry(long _rowIndex) {
@@ -167,6 +151,7 @@ public class RouteDBAdapter {
 			while (!result.isAfterLast()) {
 				String[] s = {result.getString(COL_ROUTEID_NO), result.getString(COL_ROUTENAME_NO)};
 				res.add(s);
+				result.moveToNext();
 			}
 		}
 		return res;
@@ -191,11 +176,9 @@ public class RouteDBAdapter {
 				res.add(new GeoLoc(acc,alt,bear,latE6,lonE6,spd,time));
 			}
 		}
-
 		return res;
 	}
 	
-
 	// ////////////////
 	// / MyDBHelper ///
 	// ////////////////

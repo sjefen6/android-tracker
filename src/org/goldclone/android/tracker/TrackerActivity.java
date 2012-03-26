@@ -114,9 +114,25 @@ public class TrackerActivity extends MapActivity {
 	
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == resultCode){
-        	Toast.makeText(getBaseContext(), "yup", Toast.LENGTH_SHORT)
+        	db.open();
+        	Toast.makeText(getBaseContext(), "\"" + Long.valueOf(data.getStringExtra("routeId")).toString() + "\"", Toast.LENGTH_SHORT)
 			.show();
         	currentRoute = db.getEntry(Long.valueOf(data.getStringExtra("routeId")));
+        	
+        	mapOverlays = mapView.getOverlays();
+        	ItemizedOverlay = new MyItemizedOverlay(drawable);
+        	
+        	for (GeoLoc g: currentRoute.getArray()){
+				GeoPoint point = g.getGeoPoint();
+				OverlayItem oi = new OverlayItem(point, "", "");
+				
+				Toast.makeText(getBaseContext(), "lol", Toast.LENGTH_SHORT)
+				.show();
+				
+				ItemizedOverlay.addOverlay(oi);
+				
+				mapOverlays.add(ItemizedOverlay);
+        	}
         }        	
     }
     
