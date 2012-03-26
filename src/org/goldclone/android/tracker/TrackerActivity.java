@@ -1,12 +1,16 @@
 package org.goldclone.android.tracker;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
+import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
+import com.google.android.maps.OverlayItem;
 import com.google.android.maps.Projection;
 
 import android.content.ComponentName;
@@ -18,21 +22,34 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class TrackerActivity extends MapActivity /* extends Activity */ {
+public class TrackerActivity extends MapActivity {
+	public static long T = 5000; // milliseconds
+	public static float DISTANCE = 5.0f; // meters
 	
 	public Route currentRoute;
 	private RouteDBAdapter db;
 	private Boolean tracking;
 	private locListener currentLocListener;
+	private MapController mc;
 	private Projection projection;
 	private List<Overlay> mapOverlays;
-	private MyLocationOverlay whereAmI;
+	private ArrayList<GeoPoint> overlayPoints;
+	private locListener ll;
 	private MapView mapView;
+	private Location currentLocation;
+	private String providerName;
+	private LocationManager locationManager;
+	private MyItemizedOverlay ItemizedOverlay;
+	private Drawable drawable;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -40,14 +57,26 @@ public class TrackerActivity extends MapActivity /* extends Activity */ {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		providerName = LocationManager.GPS_PROVIDER;
+		ll = new locListener() ;
+		
 		mapView = (MapView) findViewById(R.id.mapview);
 		mapView.setBuiltInZoomControls(true);
 		mapOverlays = mapView.getOverlays();
+//		projection = mapView.getProjection();
+		
+		mc = mapView.getController();
+		
+		drawable = this.getResources().getDrawable(R.drawable.ic_launcher); // bilde for tagging
+		ItemizedOverlay = new MyItemizedOverlay(drawable);
+		
+		locationManager.requestLocationUpdates(providerName, T, DISTANCE, ll);
 		
 		tracking = false;
-		db = new RouteDBAdapter(this);
-		db.open();
-		
+//		db = new RouteDBAdapter(this);
+//		db.open();
+
 		final Button new_route = (Button) findViewById(R.id.new_route);
 		final Button view_route = (Button) findViewById(R.id.view_route);
 		
@@ -55,16 +84,12 @@ public class TrackerActivity extends MapActivity /* extends Activity */ {
 			public void onClick(View v) {
 				if (!tracking) {
 					currentRoute = new Route(new Date().toString());
-					currentLocListener = new locListener(currentRoute, getBaseContext());
 					new_route.setText(R.string.stop_route);
 					tracking = true;
-					projection = mapView.getProjection();
-					whereAmI = new MyLocationOverlay(getParent(), mapView);
-					
-					mapOverlays.add(whereAmI);
-			        mapOverlays.add(new RouteOverlay(getParent(), mapView));
+
+//			        mapOverlays.add(new RouteOverlay(getParent(), mapView));
 				} else {
-					currentLocListener.stop();
+//					currentLocListener.stop();
 					new_route.setText(R.string.new_route);
 					tracking = false;
 				}
@@ -85,72 +110,54 @@ public class TrackerActivity extends MapActivity /* extends Activity */ {
 		return false;
 	}
 	
-	class RouteOverlay extends Overlay {
-	  	Context context;
-    	MapView mapview;
-    	
-    	public RouteOverlay(Context _context, MapView _mapView) {
-    		this.context = _context;
-    		this.mapview = _mapView;
-    	}
-		
-		public void draw(Canvas canvas, MapView mapv, boolean shadow) {
-			super.draw(canvas, mapv, shadow);
+	private class locListener implements LocationListener{
+		public void onLocationChanged(Location location) {
+        	Toast.makeText(getBaseContext(), "yup", Toast.LENGTH_SHORT).show();
+			if(tracking){
+				// tegner et ikon når posisjon endres.
+				GeoLoc pos = new GeoLoc(location);
+				GeoPoint point = pos.getGeoPoint();
+				OverlayItem oi = new OverlayItem(point, "", "");
+				
+				ItemizedOverlay.addOverlay(oi);
+				
+				mapOverlays.add(ItemizedOverlay);
 
-			Path path = new Path();
-    		
-    		Paint mPaint = new Paint();
-    		mPaint.setDither(true);
-            mPaint.setColor(Color.RED);
-			mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-			mPaint.setStrokeJoin(Paint.Join.ROUND);
-			mPaint.setStrokeCap(Paint.Cap.ROUND);
-			mPaint.setStrokeWidth(2);
-
-			for (int i = 0; i < currentRoute.getArray().size(); i++) {
-				Point from = new Point();
-				Point to = new Point();
-
-				projection.toPixels(currentRoute.getArray().get(i)
-						.getGeoPoint(), from);
-				projection.toPixels(currentRoute.getArray().get(i + 1)
-						.getGeoPoint(), to);
-
-				path.moveTo(from.x, from.y);
-				path.lineTo(to.x, to.y);
+				currentRoute.addLocation(location);
 			}
-			
-			canvas.drawPath(path, mPaint);
 		}
+		public void onProviderDisabled(String provider) {}
+		public void onProviderEnabled(String provider) {}
+		public void onStatusChanged(String provider, int status, Bundle extras) {}
 	}
 	
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == resultCode){
-        	Toast.makeText(getBaseContext(), "yup", Toast.LENGTH_SHORT)
-			.show();
-        	currentRoute = db.getEntry(Long.valueOf(data.getStringExtra("routeId")));
-        }        	
-    }
-    
-	public void onResume() {
-		super.onResume();
-		try {
-			db.open();
-		} catch (SQLException e) {
-			Toast.makeText(getBaseContext(), "db error", Toast.LENGTH_SHORT)
-					.show();
-			finish();
-		}
-	}
-
-	public void onPause() {
-		super.onPause();
-		try {
-			db.close();
-		} catch (SQLException e) {
-			Toast.makeText(getBaseContext(), "db error", Toast.LENGTH_SHORT)
-					.show();
-			finish();
-		}
-	}
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if(requestCode == resultCode){
+//        	Toast.makeText(getBaseContext(), "yup", Toast.LENGTH_SHORT)
+//			.show();
+//        	currentRoute = db.getEntry(Long.valueOf(data.getStringExtra("routeId")));
+//        }        	
+//    }
+//    
+//	public void onResume() {
+//		super.onResume();
+//		try {
+//			db.open();
+//		} catch (SQLException e) {
+//			Toast.makeText(getBaseContext(), "db error", Toast.LENGTH_SHORT)
+//					.show();
+//			finish();
+//		}
+//	}
+//
+//	public void onPause() {
+//		super.onPause();
+//		try {
+//			db.close();
+//		} catch (SQLException e) {
+//			Toast.makeText(getBaseContext(), "db error", Toast.LENGTH_SHORT)
+//					.show();
+//			finish();
+//		}
+//	}
 }
