@@ -96,7 +96,7 @@ public class RouteDBAdapter {
 		
 		if(errorLvl != -1){
 			Cursor result = db.query(true, DATABASE_TABLE_ROUTES, new String[] { COL_ROUTEID},
-					COL_ROUTENAME_NO + "=" + _newRoute.getName(), null, null, null, null, null);
+					COL_ROUTENAME + " = \"" + _newRoute.getName() + "\"", null, null, null, null, null);
 			
 			if (result.getCount() == 0 || !result.moveToFirst()) {
 				throw new SQLException("Derp!");

@@ -14,7 +14,7 @@ public class MyItemizedOverlay extends ItemizedOverlay
     
     public MyItemizedOverlay(Drawable defaultMarker)
     {
-        super(boundCenterBottom(defaultMarker));
+        super(boundCenter(defaultMarker));
     }
 
     @Override
