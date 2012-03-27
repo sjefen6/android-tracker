@@ -92,6 +92,8 @@ public class RouteDBAdapter {
 		ContentValues newEntryValue = new ContentValues();
 		newEntryValue.put(COL_ROUTENAME, _newRoute.getName());
 		
+		Toast.makeText(context, "insertRoute", Toast.LENGTH_SHORT).show();
+		
 		long errorLvl = db.insert(DATABASE_TABLE_ROUTES, null, newEntryValue);
 		
 		if(errorLvl != -1){
@@ -104,6 +106,9 @@ public class RouteDBAdapter {
 			
 			for (GeoLoc g : _newRoute.getArray()) {
 				if (errorLvl != -1) {
+
+					Toast.makeText(context, "insertGeoLoc", Toast.LENGTH_SHORT).show();
+					
 					newEntryValue = new ContentValues();
 					newEntryValue.put(COL_ACC, g.getAcc());
 					newEntryValue.put(COL_BEAR, g.getBear());
@@ -134,6 +139,8 @@ public class RouteDBAdapter {
 			throw new SQLException("Could not find any routes at id " + _rowIndex);
 		}
 		
+		Toast.makeText(context, "getRoute", Toast.LENGTH_SHORT).show();
+		
 		String routename = result.getString(COL_ROUTENAME_NO);
 		ArrayList<GeoLoc> locationArray = getAllGeoLoc(_rowIndex);
 
@@ -159,21 +166,29 @@ public class RouteDBAdapter {
 	
 	// Henter alle poster fra tabellen og returnerer en cursor:
 	private ArrayList<GeoLoc> getAllGeoLoc(long _routeId) {
-		Cursor result = db.query(DATABASE_TABLE_GEOLOC, new String[] { COL_GEOLOCID, COL_ACC, COL_ALT, COL_BEAR
-				, COL_LATE6, COL_LONE6, COL_SPD, COL_TIME}, COL_GEOLOCROUTEID_NO + "=" + _routeId, null, null, null, null);
+		Cursor result = db.query(true, DATABASE_TABLE_GEOLOC, new String[] { COL_GEOLOCID, COL_ACC, COL_ALT, COL_BEAR
+				, COL_LATE6, COL_LONE6, COL_SPD, COL_GEOLOCROUTEID, COL_TIME}, null, null, null, null, null, null);
 		ArrayList<GeoLoc> res = new ArrayList<GeoLoc>();
 
 		if (result.moveToFirst()) {
+			Toast.makeText(context, "moveToFirst", Toast.LENGTH_SHORT).show();
 			while (!result.isAfterLast()) {
-				long time = Long.valueOf(result.getString(COL_TIME_NO));
-				float acc = Float.valueOf(result.getString(COL_ACC_NO));
-				float bear = Float.valueOf(result.getString(COL_BEAR_NO));
-				float spd = Float.valueOf(result.getString(COL_SPD_NO));
-				double alt = Double.valueOf(result.getString(COL_ALT_NO));
-				double latE6 = Double.valueOf(result.getString(COL_LATE6_NO));
-				double lonE6 = Double.valueOf(result.getString(COL_LONE6_NO));
-				
-				res.add(new GeoLoc(acc,alt,bear,latE6,lonE6,spd,time));
+				Toast.makeText(context, "isAfterLast", Toast.LENGTH_SHORT).show();
+				if (result.getString(COL_GEOLOCROUTEID_NO).equals(_routeId)) {
+					Toast.makeText(context, "getGeoLoc", Toast.LENGTH_SHORT)
+							.show();
+					long time = Long.valueOf(result.getString(COL_TIME_NO));
+					float acc = Float.valueOf(result.getString(COL_ACC_NO));
+					float bear = Float.valueOf(result.getString(COL_BEAR_NO));
+					float spd = Float.valueOf(result.getString(COL_SPD_NO));
+					double alt = Double.valueOf(result.getString(COL_ALT_NO));
+					double latE6 = Double.valueOf(result
+							.getString(COL_LATE6_NO));
+					double lonE6 = Double.valueOf(result
+							.getString(COL_LONE6_NO));
+
+					res.add(new GeoLoc(acc, alt, bear, latE6, lonE6, spd, time));
+				}
 			}
 		}
 		return res;

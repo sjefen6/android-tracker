@@ -105,6 +105,7 @@ public class TrackerActivity extends MapActivity {
 				mapOverlays.add(ItemizedOverlay);
 
 				currentRoute.addLocation(location);
+				mapView.invalidate();
 			}
 		}
 		public void onProviderDisabled(String provider) {}
@@ -119,8 +120,7 @@ public class TrackerActivity extends MapActivity {
 			.show();
         	currentRoute = db.getEntry(Long.valueOf(data.getStringExtra("routeId")));
         	
-        	mapOverlays = mapView.getOverlays();
-        	ItemizedOverlay = new MyItemizedOverlay(drawable);
+        	mapOverlays.clear();
         	
         	for (GeoLoc g: currentRoute.getArray()){
 				GeoPoint point = g.getGeoPoint();
@@ -133,6 +133,8 @@ public class TrackerActivity extends MapActivity {
 				
 				mapOverlays.add(ItemizedOverlay);
         	}
+        	
+        	mapView.invalidate();
         }        	
     }
     

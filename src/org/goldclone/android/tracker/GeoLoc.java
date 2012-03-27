@@ -14,8 +14,8 @@ public class GeoLoc {
 		this.acc = location.getAccuracy();
 		this.alt = location.getAltitude();
 		this.bear = location.getBearing();
-		this.latE6 = location.getLatitude() / 1E6;
-		this.lonE6 = location.getLongitude() / 1E6;
+		this.latE6 = location.getLatitude() * 1E6;
+		this.lonE6 = location.getLongitude() * 1E6;
 		this.spd = location.getSpeed();
 		this.time = location.getTime();
 	}
