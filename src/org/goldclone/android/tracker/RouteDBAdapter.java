@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 public class RouteDBAdapter {
 	private static final String DATABASE_NAME = "Route.db";
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 4;
 	
 	/*
 	 * RouteTable
@@ -174,10 +174,11 @@ public class RouteDBAdapter {
 			Toast.makeText(context, "moveToFirst", Toast.LENGTH_SHORT).show();
 			while (!result.isAfterLast()) {
 				Toast.makeText(context, "isAfterLast", Toast.LENGTH_SHORT).show();
-				if (result.getString(COL_GEOLOCROUTEID_NO).equals(_routeId)) {
+				if (result.getString(COL_GEOLOCROUTEID_NO).equals(((Long) _routeId).toString())) {
 					Toast.makeText(context, "getGeoLoc", Toast.LENGTH_SHORT)
 							.show();
-					long time = Long.valueOf(result.getString(COL_TIME_NO));
+					//String tmp = result.getString(COL_TIME_NO);
+					long time = Long.valueOf("0");
 					float acc = Float.valueOf(result.getString(COL_ACC_NO));
 					float bear = Float.valueOf(result.getString(COL_BEAR_NO));
 					float spd = Float.valueOf(result.getString(COL_SPD_NO));
@@ -189,6 +190,7 @@ public class RouteDBAdapter {
 
 					res.add(new GeoLoc(acc, alt, bear, latE6, lonE6, spd, time));
 				}
+				result.moveToNext();
 			}
 		}
 		return res;
